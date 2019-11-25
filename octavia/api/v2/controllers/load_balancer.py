@@ -95,11 +95,12 @@ class LoadBalancersController(base.BaseController):
         return lb_types.LoadBalancersRootResponse(
             loadbalancers=result, loadbalancers_links=links)
 
-    def _test_lb_status(self, session, id, lb_status=constants.PENDING_UPDATE):
+    def _test_lb_status(self, session, id, lb_status=constants.PENDING_UPDATE,
+                        context=None):
         """Verify load balancer is in a mutable state."""
         lb_repo = self.repositories.load_balancer
         if not lb_repo.test_and_set_provisioning_status(
-                session, id, lb_status):
+                session, id, lb_status, context=context):
             prov_status = lb_repo.get(session, id=id).provisioning_status
             LOG.info("Invalid state %(state)s of loadbalancer resource %(id)s",
                      {"state": prov_status, "id": id})
@@ -633,7 +634,8 @@ class LoadBalancersController(base.BaseController):
                 LOG.warning(msg)
                 raise exceptions.ValidationException(detail=msg)
             self._test_lb_status(lock_session, id,
-                                 lb_status=constants.PENDING_DELETE)
+                                 lb_status=constants.PENDING_DELETE,
+                                 context=context)
 
             LOG.info("Sending delete Load Balancer %s to provider %s",
                      id, driver.name)

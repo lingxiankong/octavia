@@ -778,7 +778,7 @@ class LoadBalancerRepository(BaseRepository):
             query_options=query_options, **filters)
 
     def test_and_set_provisioning_status(self, session, id, status,
-                                         raise_exception=False):
+                                         raise_exception=False, context=None):
         """Tests and sets a load balancer and provisioning status.
 
         Puts a lock on the load balancer table to check the status of a
@@ -796,10 +796,14 @@ class LoadBalancerRepository(BaseRepository):
             lb = session.query(self.model_class).with_for_update().filter_by(
                 id=id).one()
             is_delete = status == consts.PENDING_DELETE
-            acceptable_statuses = (
-                consts.DELETABLE_STATUSES
-                if is_delete else consts.MUTABLE_STATUSES
-            )
+            is_admin_delete = is_delete and "admin" in context.roles
+
+            acceptable_statuses = consts.MUTABLE_STATUSES
+            if is_admin_delete:
+                acceptable_statuses = [lb.provisioning_status]
+            elif is_delete:
+                acceptable_statuses = consts.DELETABLE_STATUSES
+
             if lb.provisioning_status not in acceptable_statuses:
                 if raise_exception:
                     raise exceptions.ImmutableObject(
