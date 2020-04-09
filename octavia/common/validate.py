@@ -331,11 +331,11 @@ def check_port_in_use(port):
     return False
 
 
-def subnet_exists(subnet_id):
+def subnet_exists(subnet_id, context=None):
     """Raises an exception when a subnet does not exist."""
     network_driver = utils.get_network_driver()
     try:
-        subnet = network_driver.get_subnet(subnet_id)
+        subnet = network_driver.get_subnet(subnet_id, context=context)
     except Exception:
         raise exceptions.InvalidSubresource(resource='Subnet', id=subnet_id)
     return subnet

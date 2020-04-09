@@ -222,6 +222,22 @@ class TestBaseNeutronNetworkDriver(base.TestCase):
         self.assertEqual(t_constants.MOCK_IP_ADDRESS, subnet.gateway_ip)
         self.assertEqual(t_constants.MOCK_CIDR, subnet.cidr)
 
+    @mock.patch("octavia.common.clients.NeutronAuth.get_user_neutron_client")
+    def test_get_user_subnet(self, neutron_client_mock):
+        show_subnet = neutron_client_mock.return_value.show_subnet
+        show_subnet.return_value = {'subnet': {
+            'id': t_constants.MOCK_SUBNET_ID,
+            'gateway_ip': t_constants.MOCK_IP_ADDRESS,
+            'cidr': t_constants.MOCK_CIDR}}
+
+        subnet = self.driver.get_subnet(t_constants.MOCK_SUBNET_ID,
+                                        context=mock.ANY)
+
+        self.assertIsInstance(subnet, network_models.Subnet)
+        self.assertEqual(t_constants.MOCK_SUBNET_ID, subnet.id)
+        self.assertEqual(t_constants.MOCK_IP_ADDRESS, subnet.gateway_ip)
+        self.assertEqual(t_constants.MOCK_CIDR, subnet.cidr)
+
     def test_get_port(self):
         show_port = self.driver.neutron_client.show_port
         show_port.return_value = {'port': {

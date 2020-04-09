@@ -164,7 +164,7 @@ class NoopManager(object):
         network.subnets = ItIsInsideMe()
         return network
 
-    def get_subnet(self, subnet_id):
+    def get_subnet(self, subnet_id, **kwargs):
         LOG.debug("Subnet %s no-op, get_subnet subnet_id %s",
                   self.__class__.__name__, subnet_id)
         self.networkconfigconfig[subnet_id] = (subnet_id, 'get_subnet')
@@ -316,8 +316,8 @@ class NoopNetworkDriver(driver_base.AbstractNetworkDriver):
     def get_network(self, network_id):
         return self.driver.get_network(network_id)
 
-    def get_subnet(self, subnet_id):
-        return self.driver.get_subnet(subnet_id)
+    def get_subnet(self, subnet_id, **kwargs):
+        return self.driver.get_subnet(subnet_id, **kwargs)
 
     def get_port(self, port_id):
         return self.driver.get_port(port_id)

@@ -173,9 +173,14 @@ class BaseNeutronDriver(base.AbstractNetworkDriver):
         return [self._port_to_octavia_interface(
                 compute_id, port) for port in ports['ports']]
 
-    def _get_resource(self, resource_type, resource_id):
+    def _get_resource(self, resource_type, resource_id, context=None):
+        neutron_client = self.neutron_client
+        if context:
+            neutron_client = clients.NeutronAuth.get_user_neutron_client(
+                context)
+
         try:
-            resource = getattr(self.neutron_client, 'show_%s' %
+            resource = getattr(neutron_client, 'show_%s' %
                                resource_type)(resource_id)
             return getattr(utils, 'convert_%s_dict_to_model' %
                            resource_type)(resource)
@@ -228,8 +233,8 @@ class BaseNeutronDriver(base.AbstractNetworkDriver):
     def get_network(self, network_id):
         return self._get_resource('network', network_id)
 
-    def get_subnet(self, subnet_id):
-        return self._get_resource('subnet', subnet_id)
+    def get_subnet(self, subnet_id, context=None):
+        return self._get_resource('subnet', subnet_id, context=context)
 
     def get_port(self, port_id):
         return self._get_resource('port', port_id)
